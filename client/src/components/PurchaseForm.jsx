@@ -45,7 +45,7 @@ export default function PurchaseForm({ onSaved }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white w-full max-w-md mx-auto p-8 rounded-2xl shadow-lg space-y-1  mb-10"
+      className="bg-white w-full max-w-md mx-auto p-8 rounded-2xl shadow-lg space-y-2  mb-20"
     >
       <h2 className="text-2xl font-bold text-center text-gray-900">New Purchase</h2>
 

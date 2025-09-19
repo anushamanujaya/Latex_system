@@ -65,33 +65,64 @@ router.get('/:id', async (req, res) => {
   res.json(tx);
 });
 
-// PDF bill download
+const PDFDocument = require('pdfkit');
+
+const PDFDocument = require('pdfkit');
+
+// PDF bill download - small size (7cm x 10cm)
 router.get('/:id/pdf', async (req, res) => {
   try {
     const tx = await Transaction.findById(req.params.id);
     if (!tx) return res.status(404).send('Not found');
 
-    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    // 👇 Custom size: [width, height] in pts
+    const doc = new PDFDocument({ size: [200, 284], margin: 10 });
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=bill_${tx._id}.pdf`);
+    res.setHeader('Content-Disposition', `inline; filename=bill_${tx._id}.pdf`);
     doc.pipe(res);
 
-    doc.fontSize(20).text('Suneth Latex', { align: 'center' });
-    doc.moveDown();
-    doc.fontSize(12).text(`Date: ${new Date(tx.createdAt).toLocaleString()}`);
+    // ===== Invoice Header =====
+    doc
+      .fontSize(12)
+      .font("Helvetica-Bold")
+      .text("SUNETH LATEX (Pvt) Ltd", { align: "center" });
+    doc.moveDown(0.5);
+
+    doc.fontSize(8).font("Helvetica").text("PURCHASE RECEIPT", { align: "center" });
+    doc.moveDown(1);
+
+    // ===== Transaction Info =====
+    doc.fontSize(8).font("Helvetica");
+    doc.text(`Date: ${new Date(tx.createdAt).toLocaleString()}`);
     doc.text(`Seller: ${tx.sellerName}`);
+    doc.moveDown(0.5);
+
+    // ===== Table style info =====
+    doc.fontSize(8);
     doc.text(`Liters: ${tx.liters}`);
-    doc.text(`Density: ${tx.density} (decimal: ${tx.densityDecimal})`);
+    doc.text(`Density: ${tx.density} (dec: ${tx.densityDecimal})`);
     doc.text(`Kilograms: ${tx.kilograms.toFixed(2)}`);
-    doc.moveDown();
-    doc.text(`${tx.liters} × ${tx.densityDecimal} = ${tx.kilograms.toFixed(2)} kg`);
-    doc.text(`${tx.kilograms.toFixed(2)} × Rs.${tx.rate} = Rs.${tx.totalAmount.toFixed(2)}`);
-    doc.moveDown();
-    doc.text(`Status: ${tx.status}`);
+    doc.text(`Rate: Rs. ${tx.rate.toFixed(2)}`);
+    doc.text(`Total: Rs. ${tx.totalAmount.toFixed(2)}`);
+    doc.moveDown(0.5);
+
+    // ===== Quick Calculation =====
+    doc.font("Helvetica-Bold").text("Calc:");
+    doc.font("Helvetica").text(`${tx.liters} × ${tx.densityDecimal} = ${tx.kilograms.toFixed(2)} Kg`);
+    doc.text(`${tx.kilograms.toFixed(2)} × Rs.${tx.rate.toFixed(2)} = Rs.${tx.totalAmount.toFixed(2)}`);
+    doc.moveDown(0.5);
+
+    // ===== Payment Status =====
+    doc.font("Helvetica-Bold").text(`Status: ${tx.status}`);
+    doc.moveDown(1);
+
+    // ===== Footer =====
+    doc.font("Helvetica-Oblique").fontSize(8).text("Thank you!", { align: "center" });
+
     doc.end();
   } catch (err) {
     console.error(err);
-    res.status(500).send('Server error');
+    res.status(500).send("Server error");
   }
 });
 
