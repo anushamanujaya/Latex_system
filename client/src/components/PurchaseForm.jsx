@@ -43,8 +43,16 @@ export default function PurchaseForm({ onSaved }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: 500 }}>
-      <h2>New Purchase</h2>
+    <form onSubmit={handleSubmit} 
+    className="bg-white/95 backdrop-blur-sm w-full max-w-md space-y-6"
+    style={{ 
+      padding: '2.5rem', // 40px
+      margin: '0 auto',
+      maxWidth: 500, 
+      borderRadius: '1rem',
+      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+    }}>
+      <h2 className='font-extrabold text-center text-2xl'>New Purchase</h2>
 
       <div>
         <label>Seller Name</label>
@@ -75,7 +83,7 @@ export default function PurchaseForm({ onSaved }) {
       </div>
 
       <div>
-        <strong>Kilograms: {kilograms.toFixed(2)}</strong>
+        <strong>Kg: {kilograms.toFixed(2)}</strong>
       </div>
       <div>
         <strong>Total: Rs. {total.toFixed(2)}</strong>
@@ -89,7 +97,7 @@ export default function PurchaseForm({ onSaved }) {
         </select>
       </div>
 
-      <button type="submit">Save & Generate Bill</button>
+      <button type="submit" className='w-full'>Save & Generate Bill</button>
     </form>
   );
 }

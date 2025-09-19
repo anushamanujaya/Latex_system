@@ -7,8 +7,7 @@ const transactionsRouter = require('./routes/transactions');
 const cashRouter = require('./routes/cash');
 const reportsRouter = require('./routes/reports');
 const densityRouter = require('./routes/density'); 
-const authRouter = require('./routes/auth');
-
+const authRouter = require("./routes/auth");
 
 const app = express();
 app.use(cors());
@@ -19,7 +18,9 @@ app.use('/api/transactions', transactionsRouter);
 app.use('/api/cash', cashRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/density', densityRouter);
-app.use('/api/auth', authRouter);
+app.use("/api/auth", authRouter);
+app.use('/api/bowser', require('./routes/bowserProfit'));
+app.use('/api/marker', require('./routes/stockMarker'));
 
 
 const PORT = process.env.PORT || 5000;
