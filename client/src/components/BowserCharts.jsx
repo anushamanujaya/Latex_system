@@ -17,7 +17,7 @@ export default function BowserCharts({ records }) {
   }));
 
   return (
-    <div className="grid md:grid-cols-2 gap-6">
+    <div className="grid md:grid-cols-2 gap-6 mb-10 mr-5 ml-5">
       <div className="bg-white rounded-xl shadow p-4">
         <h2 className="text-lg font-semibold mb-2">Latest Profit Breakdown</h2>
         <ResponsiveContainer width="100%" height={300}>

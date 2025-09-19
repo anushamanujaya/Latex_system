@@ -15,7 +15,6 @@ export default function Bowser() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Bowser Profit Tracker</h1>
       <BowserForm onSaved={() => load()} />
       <BowserCharts records={records} />
     </div>

@@ -95,4 +95,30 @@ router.get('/:id/pdf', async (req, res) => {
   }
 });
 
+
+// ✅ Update transaction status
+router.put('/:id/status', protect, async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['Paid', 'Not Paid'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    const tx = await Transaction.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+
+    if (!tx) {
+      return res.status(404).json({ error: 'Transaction not found' });
+    }
+
+    res.json(tx);
+  } catch (err) {
+    console.error('Error updating status:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;

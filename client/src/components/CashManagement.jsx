@@ -81,6 +81,9 @@ export default function CashManagement() {
   };
 
   return (
+
+<div className='mt-25 mb-25'>
+
     <div style={cardStyle}>
       <h2 style={{ textAlign: 'center', color: '#2563eb' }}>💰 Cash Management</h2>
 
@@ -108,5 +111,6 @@ export default function CashManagement() {
         </div>
       )}
     </div>
+</div>
   );
 }

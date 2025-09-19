@@ -14,13 +14,22 @@ router.post('/', protect, async (req, res) => {
   res.json(marker);
 });
 
-// Get profit since last marker
+// Get profit since last marker OR all if no marker yet
 router.get('/profit', protect, async (req, res) => {
+  let tx;
+
   const marker = await StockMarker.findOne().sort({ createdAt: -1 });
-  if (!marker) return res.json({ totalLiters: 0, totalKilos: 0, totalAmount: 0 });
 
-  const tx = await Transaction.find({ _id: { $gt: marker.transactionId } });
+  if (!marker) {
+    // ✅ No marker → include ALL transactions
+    tx = await Transaction.find({});
+  } else {
+    // ✅ Marker exists → include only NEW ones after marker
+    const markerTx = await Transaction.findById(marker.transactionId);
+    tx = await Transaction.find({ createdAt: { $gt: markerTx?.createdAt || new Date(0) } });
+  }
 
+  // Calculate totals
   const totalLiters = tx.reduce((s, t) => s + t.liters, 0);
   const totalKilos = tx.reduce((s, t) => s + t.kilograms, 0);
   const totalAmount = tx.reduce((s, t) => s + t.totalAmount, 0);

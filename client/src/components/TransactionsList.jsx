@@ -22,7 +22,9 @@ export default function TransactionsList() {
 
   return (
     <div className="w-full mx-auto p-6 bg-white shadow-md rounded-md">
-      <h2 className="text-2xl font-bold text-center bg-white relative top-[6px]"> Recent Latex Transactions </h2>
+      <h2 className="text-2xl font-bold text-center mb-4">
+        Recent Latex Transactions
+      </h2>
 
       {loading ? (
         <div className="flex justify-center items-center h-40">
@@ -48,18 +50,17 @@ export default function TransactionsList() {
           </svg>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          {/* Desktop table */}
-          <table className="hidden md:table w-full table-auto border-collapse">
-            <thead>
-              <tr className="bg-white text-left">
-                <th className="p-3 border-b">Date</th>
-                <th className="p-3 border-b">Seller</th>
-                <th className="p-3 border-b">Liters</th>
-                <th className="p-3 border-b">Kilograms</th>
-                <th className="p-3 border-b">Total</th>
-                <th className="p-3 border-b">Status</th>
-                <th className="p-3 border-b">Bill</th>
+        <div className="overflow-x-auto ">
+          <table className="w-full border-collapse bg-white rounded-lg overflow-hidden shadow">
+            <thead className='px-10'>
+              <tr className="bg-[#8EC93B] text-left text-black h-17 text-l font-extrabold">
+                <th className="p-3">Date</th>
+                <th className="p-3">Seller</th>
+                <th className="p-3">Liters</th>
+                <th className="p-3">Kilograms</th>
+                <th className="p-3">Total</th>
+                <th className="p-3">Status</th>
+                <th className="p-3">Bill</th>
               </tr>
             </thead>
             <tbody>
@@ -71,22 +72,34 @@ export default function TransactionsList() {
                   <td className="p-3 border-b">{it.kilograms?.toFixed(2) || '-'}</td>
                   <td className="p-3 border-b">Rs. {it.totalAmount.toFixed(2)}</td>
                   <td className="p-3 border-b">
-                    <span
-                      className={`px-2 py-1 rounded text-sm font-medium ${
+                    <select
+                      value={it.status}
+                      onChange={async (e) => {
+                        try {
+                          const newStatus = e.target.value;
+                          await api.put(`/api/transactions/${it._id}/status`, { status: newStatus });
+                          load();
+                        } catch (err) {
+                          console.error('Error updating status:', err);
+                          alert('Failed to update status');
+                        }
+                      }}
+                      className={`px-3 py-1 rounded-md border text-sm font-medium focus:outline-none ${
                         it.status.toLowerCase() === 'paid'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
+                          ? 'bg-green-100 text-green-700 border-green-300'
+                          : 'bg-red-100 text-red-700 border-red-300'
                       }`}
                     >
-                      {it.status.charAt(0).toUpperCase() + it.status.slice(1)}
-                    </span>
+                      <option value="Paid">Paid</option>
+                      <option value="Not Paid">Not Paid</option>
+                    </select>
                   </td>
                   <td className="p-3 border-b">
                     <a
                       href={`/api/transactions/${it._id}/pdf`}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-blue-600 hover:underline"
+                      className="text-blue-600 font-medium hover:underline"
                     >
                       PDF
                     </a>
@@ -95,34 +108,6 @@ export default function TransactionsList() {
               ))}
             </tbody>
           </table>
-
-          {/* Mobile-friendly stacked layout */}
-          <div className="md:hidden space-y-4">
-            {items.map((it) => (
-              <div key={it._id} className="border rounded p-4 shadow-sm">
-                <div className="mb-2 text-sm text-gray-500">{new Date(it.createdAt).toLocaleString()}</div>
-                <div><strong>Seller:</strong> {it.sellerName}</div>
-                <div><strong>Liters:</strong> {it.liters}</div>
-                <div><strong>Kilograms:</strong> {it.kilograms?.toFixed(2) || '-'}</div>
-                <div><strong>Total:</strong> Rs. {it.totalAmount.toFixed(2)}</div>
-                <div>
-                  <strong>Status:</strong>{' '}
-                  
-
-                </div>
-                <div className="mt-2">
-                  <a
-                    href={`/api/transactions/${it._id}/pdf`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-blue-600 hover:underline text-sm"
-                  >
-                    View PDF
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       )}
     </div>

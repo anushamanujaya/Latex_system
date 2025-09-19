@@ -43,30 +43,49 @@ export default function PurchaseForm({ onSaved }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} 
-    className="bg-white/95 backdrop-blur-sm w-full max-w-md space-y-6"
-    style={{ 
-      padding: '2.5rem', // 40px
-      margin: '0 auto',
-      maxWidth: 500, 
-      borderRadius: '1rem',
-      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-    }}>
-      <h2 className='font-extrabold text-center text-2xl'>New Purchase</h2>
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white w-full max-w-md mx-auto p-8 rounded-2xl shadow-lg space-y-1  mb-10"
+    >
+      <h2 className="text-2xl font-bold text-center text-gray-900">New Purchase</h2>
 
+      {/* Seller Name */}
       <div>
-        <label>Seller Name</label>
-        <input value={seller} onChange={e => setSeller(e.target.value)} required />
+        <label className="block text-m font-semibold text-gray-700 mb-2">
+          Seller Name
+        </label>
+        <input
+          value={seller}
+          onChange={e => setSeller(e.target.value)}
+          required
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 focus:border-blue-500 outline-none"
+        />
       </div>
 
+      {/* Liters */}
       <div>
-        <label>Liters</label>
-        <input type="number" value={liters} onChange={e => setLiters(e.target.value)} required />
+        <label className="block text-m font-semibold text-gray-700 mb-2">
+          Liters
+        </label>
+        <input
+          type="number"
+          value={liters}
+          onChange={e => setLiters(e.target.value)}
+          required
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 focus:border-blue-500 outline-none"
+        />
       </div>
 
+      {/* Density */}
       <div>
-        <label>Density</label>
-        <select value={density} onChange={e => setDensity(e.target.value)}>
+        <label className="block text-m font-semibold text-gray-700 mb-2">
+          Density
+        </label>
+        <select
+          value={density}
+          onChange={e => setDensity(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 focus:border-blue-500 outline-none font-semibold"
+        >
           {Object.keys(densityMap)
             .sort((a, b) => a - b)
             .map(k => (
@@ -77,27 +96,50 @@ export default function PurchaseForm({ onSaved }) {
         </select>
       </div>
 
+      {/* Rate */}
       <div>
-        <label>Rate (Rs)</label>
-        <input type="number" value={rate} onChange={e => setRate(e.target.value)} required />
+        <label className="block text-m font-semibold text-gray-700 mb-2">
+          Rate (Rs)
+        </label>
+        <input
+          type="number"
+          value={rate}
+          onChange={e => setRate(e.target.value)}
+          required
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 focus:border-blue-500 outline-none"
+        />
       </div>
 
-      <div>
-        <strong>Kg: {kilograms.toFixed(2)}</strong>
-      </div>
-      <div>
-        <strong>Total: Rs. {total.toFixed(2)}</strong>
+      {/* Calculations */}
+      <div className='font-medium'>
+        <p className="text-gray-800 font-semibold">Kg: {kilograms.toFixed(2)}</p>
+        <p className="text-gray-800 font-semibold">
+          Total: Rs. {total.toFixed(2)}
+        </p>
       </div>
 
+      {/* Status */}
       <div>
-        <label>Status</label>
-        <select value={status} onChange={e => setStatus(e.target.value)}>
-          <option>Not Paid</option>
-          <option>Paid</option>
+        <label className="block text-m font-semibold  mb-2">
+          Status
+        </label>
+        <select
+          value={status}
+          onChange={e => setStatus(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 focus:border-blue-500 outline-none"
+        >
+          <option className='text-red-400 font-semibold'>Not Paid</option>
+          <option className='text-green-400 font-semibold'>Paid</option>
         </select>
       </div>
 
-      <button type="submit" className='w-full'>Save & Generate Bill</button>
+      {/* Button */}
+      <button
+        type="submit"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md transition mt-1"
+      >
+        Save & Generate Bill
+      </button>
     </form>
   );
 }

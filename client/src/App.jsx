@@ -6,7 +6,7 @@ import CashManagement from './components/CashManagement.jsx'
 import Reports from './components/Reports.jsx'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
-import Bowser from './pages/Bowser.jsx';
+import Bowser from './pages/Bowser.jsx'
 import { AuthContext } from './context/AuthContext.jsx'
 import './index.css'
 
@@ -19,36 +19,45 @@ export default function App() {
   const { user, logout } = useContext(AuthContext);
 
   return (
-    <div style={{ padding: "0px" }}>
-      {/* Only show navbar if user is logged in */}
+    <div className="p-0">
+      {/* ✅ Only show navbar if logged in */}
       {user && (
-        <nav style={{
-          marginBottom: "20px",
-          textAlign: "center",
-          fontSize: "20px",
-          padding: "`18px",
-          backgroundColor: "#000000",
-          borderBottom: "2px solid #e7e7e7"
-        }}>
-          <div className='relative top-[6px] flex gap-5'>
-          <Link to="/" className='whitespace-nowrap text-2xl'>Suneth Latex (Pvt) Ltd</Link>|{" "}
-          <Link to="/">Purchase</Link> |{" "}
-          <Link to="/transactions">Transactions</Link> |{" "}
-          <Link to="/cash">Cash</Link> |{" "}
-          <Link to="/reports">Reports</Link> |{" "}
-          <Link to="/bowser" style={{ color: '#fff' }}>Profit</Link>
+        <nav className="bg-black border-b-2 border-gray-200 mb-6">
+          <div className="flex justify-between items-center px-6 py-4">
+            
+            {/* Left side - Brand + Links */}
+            <div className="flex items-center gap-6 flex-wrap">
+              <Link
+                to="/"
+                className="text-2xl font-bold text-white whitespace-nowrap hover:text-sky-400 ml-10"
+              >
+                Suneth Latex (Pvt) Ltd
+              </Link>
+              <Link to="/" className="text-xl text-gray-200 hover:text-sky-400 ml-50">
+                Purchase
+              </Link>
+              <Link to="/transactions" className="text-xl text-gray-200 hover:text-sky-400 ml-5">
+                Transactions
+              </Link>
+              <Link to="/cash" className="text-xl text-gray-200 hover:text-sky-400 ml-5">
+                Cash
+              </Link>
+              <Link to="/reports" className="text-xl text-gray-200 hover:text-sky-400 ml-5">
+                Reports
+              </Link>
+              <Link to="/bowser" className="text-xl text-white hover:text-sky-400 ml-5">
+                Profit
+              </Link>
+            </div>
 
+            {/* Right side - Logout */}
+            <button
+              onClick={logout}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-semibold mr-25 text-l text-center"
+            >
+              Logout
+            </button>
           </div>
-          <button onClick={logout} style={{ 
-            marginLeft: "595px", 
-            color: "white", 
-            background: "red", 
-            border: "none", 
-            cursor: "pointer", 
-            padding: "5px 10px",
-            borderRadius: "5px"}}>
-            Logout
-          </button>
         </nav>
       )}
 
@@ -91,7 +100,6 @@ export default function App() {
           }
         />
         <Route path="/bowser" element={<Bowser />} />
-
       </Routes>
     </div>
   );
