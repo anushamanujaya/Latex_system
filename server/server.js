@@ -22,6 +22,8 @@ app.use("/api/auth", authRouter);
 app.use('/api/bowser', require('./routes/bowserProfit'));
 app.use('/api/marker', require('./routes/stockMarker'));
 app.use("/api/ai", require("./routes/aiParse"));
+app.use("/api/ai/report", require("./routes/aiReportQuery"));
+
 
 
 const PORT = process.env.PORT || 5000;
