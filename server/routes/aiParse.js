@@ -15,7 +15,7 @@ router.post("/parsePurchase", async (req, res) => {
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      response_format: { type: "json_object" }, // <- guarantees valid JSON
+      response_format: { type: "json_object" }, 
       messages: [
         {
           role: "system",
@@ -44,7 +44,7 @@ router.post("/parsePurchase", async (req, res) => {
     try {
       data = JSON.parse(parsed);
     } catch (err) {
-      console.error("❌ JSON parsing failed:", parsed);
+      console.error("JSON parsing failed:", parsed);
       return res.status(500).json({ error: "AI returned invalid JSON" });
     }
 
