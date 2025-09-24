@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { Routes, Route, Link, Navigate } from 'react-router-dom'
 import PurchaseForm from './components/PurchaseForm.jsx'
+import PurchasePage from "./pages/PurchasePage.jsx";
 import TransactionsList from './components/TransactionsList.jsx'
 import CashManagement from './components/CashManagement.jsx'
 import Reports from './components/Reports.jsx'
@@ -9,6 +10,7 @@ import Register from './pages/Register.jsx'
 import Bowser from './pages/Bowser.jsx'
 import { AuthContext } from './context/AuthContext.jsx'
 import './index.css'
+import VoiceAssistant from "./components/VoiceAssistant";
 
 function PrivateRoute({ children }) {
   const { user } = useContext(AuthContext);
@@ -53,7 +55,7 @@ export default function App() {
             {/* Right side - Logout */}
             <button
               onClick={logout}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-semibold mr-25 text-l text-center"
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-semibold mr-20 text-l text-center"
             >
               Logout
             </button>
@@ -71,7 +73,16 @@ export default function App() {
           path="/"
           element={
             <PrivateRoute>
-              <PurchaseForm />
+              <PurchasePage />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/voice"
+          element={
+            <PrivateRoute>
+              <VoiceAssistant />
             </PrivateRoute>
           }
         />

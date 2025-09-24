@@ -5,42 +5,63 @@ const densityMap = require('../data/densityMap');
 const PDFDocument = require('pdfkit');
 const protect = require('../middleware/auth');
 
-// Create transaction
+// ===================== Create transaction =====================
 router.post('/', protect, async (req, res) => {
   try {
-    const { sellerName, liters, density, rate, status } = req.body;
-    if (!sellerName || !liters || !density || !rate) {
-      return res.status(400).json({ error: 'Missing fields' });
+    let { sellerName, liters, density, rate, status } = req.body;
+
+    console.log("📥 Incoming transaction body:", req.body);
+
+    // Defaults
+    sellerName = sellerName ? String(sellerName).trim() : "Unknown Seller";
+    status = status && status.toLowerCase() === "paid" ? "Paid" : "Not Paid";
+
+    // Numeric conversions
+    const litersNum = Number(liters);
+    const densityNum = Number(density);
+    const rateNum = Number(rate);
+
+    if (!Number.isFinite(litersNum) || litersNum <= 0) {
+      return res.status(400).json({ error: `Invalid liters: ${liters}` });
+    }
+    if (!Number.isFinite(densityNum) || densityNum <= 0) {
+      return res.status(400).json({ error: `Invalid density: ${density}` });
+    }
+    if (!Number.isFinite(rateNum) || rateNum <= 0) {
+      return res.status(400).json({ error: `Invalid rate: ${rate}` });
     }
 
-    const densityDecimal = densityMap[density];
+    // Lookup density conversion
+    const densityDecimal = densityMap[densityNum];
     if (densityDecimal === undefined) {
-      return res.status(400).json({ error: 'Invalid density' });
+      return res.status(400).json({ error: `Invalid density value: ${densityNum} (not in densityMap)` });
     }
 
-    const kilograms = Number(liters) * Number(densityDecimal);
-    const totalAmount = kilograms * Number(rate);
+    // Calculate
+    const kilograms = litersNum * densityDecimal;
+    const totalAmount = kilograms * rateNum;
 
     const tx = new Transaction({
       sellerName,
-      liters,
-      density,
+      liters: litersNum,
+      density: densityNum,
       densityDecimal,
       kilograms,
-      rate,
+      rate: rateNum,
       totalAmount,
-      status: status || 'Not Paid'
+      status
     });
 
     await tx.save();
+    console.log("✅ Transaction saved:", tx._id);
     res.json(tx);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error creating transaction:", err);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// List with optional date range
+// ===================== List with optional date range =====================
 router.get('/', async (req, res) => {
   try {
     const { start, end } = req.query;
@@ -54,51 +75,46 @@ router.get('/', async (req, res) => {
     const items = await Transaction.find(filter).sort({ createdAt: -1 });
     res.json(items);
   } catch (err) {
+    console.error("❌ Error listing transactions:", err);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// Get single transaction
+// ===================== Get single transaction =====================
 router.get('/:id', async (req, res) => {
-  const tx = await Transaction.findById(req.params.id);
-  if (!tx) return res.status(404).json({ error: 'Not found' });
-  res.json(tx);
+  try {
+    const tx = await Transaction.findById(req.params.id);
+    if (!tx) return res.status(404).json({ error: 'Not found' });
+    res.json(tx);
+  } catch (err) {
+    console.error("❌ Error fetching transaction:", err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
-const PDFDocument = require('pdfkit');
-
-const PDFDocument = require('pdfkit');
-
-// PDF bill download - small size (7cm x 10cm)
+// ===================== PDF bill =====================
 router.get('/:id/pdf', async (req, res) => {
   try {
     const tx = await Transaction.findById(req.params.id);
     if (!tx) return res.status(404).send('Not found');
 
-    // 👇 Custom size: [width, height] in pts
     const doc = new PDFDocument({ size: [200, 284], margin: 10 });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename=bill_${tx._id}.pdf`);
     doc.pipe(res);
 
-    // ===== Invoice Header =====
-    doc
-      .fontSize(12)
-      .font("Helvetica-Bold")
-      .text("SUNETH LATEX (Pvt) Ltd", { align: "center" });
+    // Header
+    doc.fontSize(12).font("Helvetica-Bold").text("SUNETH LATEX (Pvt) Ltd", { align: "center" });
     doc.moveDown(0.5);
-
     doc.fontSize(8).font("Helvetica").text("PURCHASE RECEIPT", { align: "center" });
     doc.moveDown(1);
 
-    // ===== Transaction Info =====
+    // Info
     doc.fontSize(8).font("Helvetica");
     doc.text(`Date: ${new Date(tx.createdAt).toLocaleString()}`);
     doc.text(`Seller: ${tx.sellerName}`);
     doc.moveDown(0.5);
 
-    // ===== Table style info =====
-    doc.fontSize(8);
     doc.text(`Liters: ${tx.liters}`);
     doc.text(`Density: ${tx.density} (dec: ${tx.densityDecimal})`);
     doc.text(`Kilograms: ${tx.kilograms.toFixed(2)}`);
@@ -106,22 +122,18 @@ router.get('/:id/pdf', async (req, res) => {
     doc.text(`Total: Rs. ${tx.totalAmount.toFixed(2)}`);
     doc.moveDown(0.5);
 
-    // ===== Quick Calculation =====
     doc.font("Helvetica-Bold").text("Calc:");
     doc.font("Helvetica").text(`${tx.liters} × ${tx.densityDecimal} = ${tx.kilograms.toFixed(2)} Kg`);
     doc.text(`${tx.kilograms.toFixed(2)} × Rs.${tx.rate.toFixed(2)} = Rs.${tx.totalAmount.toFixed(2)}`);
     doc.moveDown(0.5);
 
-    // ===== Payment Status =====
     doc.font("Helvetica-Bold").text(`Status: ${tx.status}`);
     doc.moveDown(1);
 
-    // ===== Footer =====
     doc.font("Helvetica-Oblique").fontSize(8).text("Thank you!", { align: "center" });
-
     doc.end();
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error generating PDF:", err);
     res.status(500).send("Server error");
   }
 });
@@ -135,19 +147,12 @@ router.put('/:id/status', protect, async (req, res) => {
       return res.status(400).json({ error: 'Invalid status' });
     }
 
-    const tx = await Transaction.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    );
-
-    if (!tx) {
-      return res.status(404).json({ error: 'Transaction not found' });
-    }
+    const tx = await Transaction.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    if (!tx) return res.status(404).json({ error: 'Transaction not found' });
 
     res.json(tx);
   } catch (err) {
-    console.error('Error updating status:', err);
+    console.error('❌ Error updating status:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
