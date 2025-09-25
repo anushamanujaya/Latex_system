@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
-import api from '../utils/axios';
+import React, { useState } from "react";
+import api from "../utils/axios";
 
 export default function Reports() {
-  const [start, setStart] = useState('');
-  const [end, setEnd] = useState('');
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
   const [summary, setSummary] = useState(null);
   const [transactions, setTransactions] = useState([]);
+
+  // AI Assistant States
+  const [aiQuestion, setAiQuestion] = useState("");
+  const [aiAnswer, setAiAnswer] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const run = async () => {
     const params = {};
@@ -13,34 +18,57 @@ export default function Reports() {
     if (end) params.end = end;
 
     const [sumRes, txRes] = await Promise.all([
-      api.get('/api/reports/summary', { params }),
-      api.get('/api/transactions', { params }),
+      api.get("/api/reports/summary", { params }),
+      api.get("/api/transactions", { params }),
     ]);
     setSummary(sumRes.data);
     setTransactions(txRes.data);
   };
 
+  // 👉 Ask AI about reports
+  const askAI = async () => {
+    if (!aiQuestion.trim()) return;
+    setLoading(true);
+    setAiAnswer(null);
+
+    try {
+      const res = await api.post("/api/ai/report/query", { text: aiQuestion });
+      setAiAnswer(res.data);
+    } catch (err) {
+      console.error("AI query failed:", err);
+      setAiAnswer({ error: "AI query failed" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-lg p-8 max-w-8xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Reports</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+        Reports
+      </h2>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-4 mb-6 items-end">
         <div className="flex flex-col">
-          <label className="text-sm font-semibold text-gray-600 mb-1">Start Date</label>
+          <label className="text-sm font-semibold text-gray-600 mb-1">
+            Start Date
+          </label>
           <input
             type="date"
             value={start}
-            onChange={e => setStart(e.target.value)}
+            onChange={(e) => setStart(e.target.value)}
             className="p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 focus:border-blue-500 outline-none"
           />
         </div>
         <div className="flex flex-col">
-          <label className="text-sm font-semibold text-gray-600 mb-1">End Date</label>
+          <label className="text-sm font-semibold text-gray-600 mb-1">
+            End Date
+          </label>
           <input
             type="date"
             value={end}
-            onChange={e => setEnd(e.target.value)}
+            onChange={(e) => setEnd(e.target.value)}
             className="p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 focus:border-blue-500 outline-none"
           />
         </div>
@@ -52,15 +80,78 @@ export default function Reports() {
         </button>
       </div>
 
+      {/* ✅ AI Assistant Box */}
+      <div className="mt-6 bg-blue-50 rounded-xl p-4 shadow-md">
+        <h3 className="text-lg font-semibold mb-3">🤖 Ask AI about Reports</h3>
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={aiQuestion}
+            onChange={(e) => setAiQuestion(e.target.value)}
+            placeholder='e.g. "How much latex did I buy last month?"'
+            className="flex-grow p-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 focus:border-blue-500 outline-none"
+          />
+          <button
+            onClick={askAI}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          >
+            Ask
+          </button>
+        </div>
+
+        {loading && <p className="text-sm text-gray-500 mt-3">Thinking...</p>}
+        {aiAnswer && (
+          <div className="mt-4 bg-white rounded-md p-3 border">
+            {aiAnswer.error ? (
+              <p className="text-red-600">{aiAnswer.error}</p>
+            ) : (
+              <>
+                <p>
+                  <strong>Question:</strong> {aiAnswer.query}
+                </p>
+                <p>
+                  <strong>Answer:</strong>{" "}
+                  {typeof aiAnswer.answer === "number"
+                    ? aiAnswer.answer.toLocaleString()
+                    : aiAnswer.answer}
+                </p>
+                {aiAnswer.range?.startDate && (
+                  <p className="text-sm text-gray-600">
+                    Range: {aiAnswer.range.startDate} →{" "}
+                    {aiAnswer.range.endDate}
+                  </p>
+                )}
+                {aiAnswer.sellerName && (
+                  <p className="text-sm text-gray-600">
+                    Seller: {aiAnswer.sellerName}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Summary Section */}
       {summary && (
-        <div className="mb-6 bg-gray-50 p-5 rounded-xl border">
+        <div className="mb-6 mt-6 bg-gray-50 p-5 rounded-xl border">
           <h3 className="text-lg font-bold mb-3 text-gray-800">Summary</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <p><strong>Total Liters:</strong> {summary.totalLiters}</p>
-            <p><strong>Total Kilograms:</strong> {summary.totalKilograms?.toFixed(2)}</p>
-            <p><strong>Total Money Paid:</strong> Rs. {summary.totalMoneyPaid?.toFixed(2)}</p>
-            <p><strong>All Transaction Sum:</strong> Rs. {summary.totalAmountAll?.toFixed(2)}</p>
+            <p>
+              <strong>Total Liters:</strong> {summary.totalLiters}
+            </p>
+            <p>
+              <strong>Total Kilograms:</strong>{" "}
+              {summary.totalKilograms?.toFixed(2)}
+            </p>
+            <p>
+              <strong>Total Money Paid:</strong> Rs.{" "}
+              {summary.totalMoneyPaid?.toFixed(2)}
+            </p>
+            <p>
+              <strong>All Transaction Sum:</strong> Rs.{" "}
+              {summary.totalAmountAll?.toFixed(2)}
+            </p>
           </div>
         </div>
       )}
@@ -82,17 +173,23 @@ export default function Reports() {
           <tbody>
             {transactions.map((t) => (
               <tr key={t._id} className="hover:bg-gray-50">
-                <td className="p-3 border-b">{new Date(t.createdAt).toLocaleString()}</td>
+                <td className="p-3 border-b">
+                  {new Date(t.createdAt).toLocaleString()}
+                </td>
                 <td className="p-3 border-b">{t.sellerName}</td>
                 <td className="p-3 border-b">{t.liters}</td>
-                <td className="p-3 border-b">{t.kilograms?.toFixed(2) || '-'}</td>
-                <td className="p-3 border-b">Rs. {t.totalAmount.toFixed(2)}</td>
+                <td className="p-3 border-b">
+                  {t.kilograms?.toFixed(2) || "-"}
+                </td>
+                <td className="p-3 border-b">
+                  Rs. {t.totalAmount.toFixed(2)}
+                </td>
                 <td className="p-3 border-b">
                   <span
                     className={`px-2 py-1 rounded text-sm font-medium ${
-                      t.status.toLowerCase() === 'paid'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-red-100 text-red-700'
+                      t.status.toLowerCase() === "paid"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
                     }`}
                   >
                     {t.status}
