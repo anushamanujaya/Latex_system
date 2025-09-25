@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import api from "../utils/axios";
+import StockMarker from "./StockMarker";
 
 export default function Reports() {
   const [start, setStart] = useState("");
@@ -25,7 +26,7 @@ export default function Reports() {
     setTransactions(txRes.data);
   };
 
-  // 👉 Ask AI about reports
+  // Ask AI about reports
   const askAI = async () => {
     if (!aiQuestion.trim()) return;
     setLoading(true);
@@ -80,7 +81,12 @@ export default function Reports() {
         </button>
       </div>
 
-      {/* ✅ AI Assistant Box */}
+      {/* Stock Marker here */}
+      <div className="mb-6">
+        <StockMarker onMarked={run} />
+      </div>
+
+      {/* AI Assistant Box */}
       <div className="mt-6 bg-blue-50 rounded-xl p-4 shadow-md">
         <h3 className="text-lg font-semibold mb-3">🤖 Ask AI about Reports</h3>
         <div className="flex items-center gap-2">

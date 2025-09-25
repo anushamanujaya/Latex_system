@@ -19,7 +19,7 @@ export default function BowserForm({ onSaved }) {
     fetchStock();
   }, []);
 
-  // Auto-calculate profit live
+  // Auto-calc profit live
   useEffect(() => {
     if (amountReceived && amountGiven) {
       setProfit(Number(amountReceived) - Number(amountGiven));
@@ -28,16 +28,15 @@ export default function BowserForm({ onSaved }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Now we only send amountReceived - backend computes cost/profit
     await api.post('/api/bowser', {
-      litersGiven: liters,
-      kilosGiven: kilos,
-      amountGiven,
-      amountReceived: +amountReceived,
-      profit,
+      amountReceived: +amountReceived
     });
 
-    await api.post('/api/marker'); // ✅ place new marker
     onSaved();
+    setAmountReceived('');
+    setProfit(0);
   };
 
   return (
@@ -46,13 +45,13 @@ export default function BowserForm({ onSaved }) {
       className="bg-white w-full max-w-md mx-auto p-8 rounded-2xl shadow-lg space-y-5"
     >
       <h2 className="text-2xl font-bold text-center text-gray-800 mb-4">
-        Profit Finder
+        Bowser Profit Calculator
       </h2>
 
       {/* Liters */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Liters Purchased
+          Liters Purchased (since last sale)
         </label>
         <input
           value={liters}
@@ -76,7 +75,7 @@ export default function BowserForm({ onSaved }) {
       {/* Amount Given */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Amount Given (Auto)
+          Purchase Cost (auto)
         </label>
         <input
           value={amountGiven}
@@ -88,7 +87,7 @@ export default function BowserForm({ onSaved }) {
       {/* Amount Received */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Amount Received
+          Amount Received from Bowser
         </label>
         <input
           type="number"
@@ -96,13 +95,14 @@ export default function BowserForm({ onSaved }) {
           onChange={e => setAmountReceived(e.target.value)}
           placeholder="Enter selling total"
           className="w-full p-3 border border-gray-300 rounded-lg focus:ring focus:ring-blue-400 focus:border-blue-500 outline-none"
+          required
         />
       </div>
 
       {/* Profit */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Profit (Auto)
+          Profit (auto)
         </label>
         <input
           value={profit}
@@ -111,7 +111,6 @@ export default function BowserForm({ onSaved }) {
         />
       </div>
 
-      {/* Submit */}
       <button
         type="submit"
         className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg shadow-md transition"
